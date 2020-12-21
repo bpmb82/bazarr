@@ -1,47 +1,58 @@
-FROM python:3.9.1-slim-buster
+FROM alpine:latest
 
-# environment settings
-ARG DEBIAN_FRONTEND="noninteractive"
-ENV HOME="/config" \
-PYTHONIOENCODING=utf-8
+ARG BAZARR_VERSION
 
 RUN \
- echo "**** install apt-transport-https first ****" && \
- apt-get update && \
- apt-get install -y apt-transport-https && \
+ echo "**** install build packages ****" && \
+ apk add --no-cache --virtual=build-dependencies \
+	g++ \
+	gcc \
+	libxml2-dev \
+	libxslt-dev \
+	py3-pip \
+	python3-dev && \
  echo "**** install packages ****" && \
- apt-get update && \
- apt-get install -y \
-  git-core && \
- echo "**** installing bazarr ****" && \
- cd /opt && \
- git clone https://github.com/morpheus65535/bazarr.git /opt/bazarr && \
- cd bazarr && \
- git checkout master && \
- pip3 install -U pip && \
- pip install -U --no-cache-dir -r requirements.txt && \
- echo "**** cleanup ****" && \
- ln -s \
-	/usr/bin/python3 \
-	/usr/bin/python && \
- apt-get purge --auto-remove -y \
-  git-core \
-  python3-pip && \
- apt-get clean && \
+ apk add --no-cache \
+	curl \
+	ffmpeg \
+	libxml2 \
+	libxslt \
+	python3 \
+	unrar \
+	unzip && \
+ echo "**** install bazarr ****" && \
+ if [ -z ${BAZARR_VERSION+x} ]; then \
+	BAZARR_VERSION=$(curl -sX GET "https://api.github.com/repos/morpheus65535/bazarr/releases/latest" \
+	| awk '/tag_name/{print $4;exit}' FS='[""]'); \
+ fi && \
+ curl -o \
+ /tmp/bazarr.tar.gz -L \
+	"https://github.com/morpheus65535/bazarr/archive/${BAZARR_VERSION}.tar.gz" && \
+ mkdir -p \
+	/app/bazarr && \
+ tar xf \
+ /tmp/bazarr.tar.gz -C \
+	/app/bazarr --strip-components=1 && \
+ rm -Rf /app/bazarr/bin && \
+ echo "**** Install requirements ****" && \
+ pip3 install --no-cache-dir -U  -r \
+	/app/bazarr/requirements.txt && \
+ echo "**** clean up ****" && \
+ apk del --purge \
+	build-dependencies && \
  rm -rf \
-	/tmp/* \
-	/var/lib/apt/lists/* \
-	/var/tmp/*
-  
-WORKDIR /opt/bazarr
-COPY start.sh .
-COPY healthcheck.sh .
-RUN chmod +x *.sh
+	/root/.cache \
+	/tmp/*
 
+# add local files
+COPY healthcheck.sh /app
+COPY start.sh /app
+
+# ports and volumes
 EXPOSE 6767
 VOLUME /config
 
 HEALTHCHECK --interval=5m --timeout=5s \
-  CMD /opt/bazarr/healthcheck.sh
+  CMD /app/healthcheck.sh
 
-ENTRYPOINT ["/opt/bazarr/start.sh"]
+ENTRYPOINT ["/app/start.sh"]
