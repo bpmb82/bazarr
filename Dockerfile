@@ -17,7 +17,7 @@ RUN \
   python3-distutils && \
  echo "**** installing bazarr ****" && \
  cd /opt && \
- sudo git clone https://github.com/morpheus65535/bazarr.git /opt/bazarr && \
+ git clone https://github.com/morpheus65535/bazarr.git /opt/bazarr && \
  cd bazarr && \
  git checkout master && \
  pip3 install -U pip && \
