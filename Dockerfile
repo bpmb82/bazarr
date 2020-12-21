@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM python:3.9.1-slim-buster
 
 # environment settings
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -12,9 +12,7 @@ RUN \
  echo "**** install packages ****" && \
  apt-get update && \
  apt-get install -y \
-  git-core \
-  python3-pip \
-  python3-distutils && \
+  git-core && \
  echo "**** installing bazarr ****" && \
  cd /opt && \
  git clone https://github.com/morpheus65535/bazarr.git /opt/bazarr && \
@@ -28,7 +26,7 @@ RUN \
 	/usr/bin/python && \
  apt-get purge --auto-remove -y \
   git-core \
-	python3-pip && \
+  python3-pip && \
  apt-get clean && \
  rm -rf \
 	/tmp/* \
