@@ -45,8 +45,10 @@ RUN \
 	/tmp/*
 
 # add local files
-COPY healthcheck.sh /app
-COPY start.sh /app
+WORKDIR /app .
+COPY healthcheck.sh .
+COPY start.sh .
+RUN chmod +x *.sh
 
 # ports and volumes
 EXPOSE 6767
