@@ -45,7 +45,7 @@ RUN \
 	/tmp/*
 
 # add local files
-WORKDIR /app .
+WORKDIR /app
 COPY healthcheck.sh .
 COPY start.sh .
 RUN chmod +x *.sh
