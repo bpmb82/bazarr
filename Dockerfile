@@ -38,6 +38,9 @@ RUN \
  pip3 install --no-cache-dir -U  -r \
 	/app/bazarr/requirements.txt && \
  echo "**** clean up ****" && \
+ ln -s \
+	/usr/bin/python3 \
+	/usr/bin/python && \
  apk del --purge \
 	build-dependencies && \
  rm -rf \
