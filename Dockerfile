@@ -4,7 +4,7 @@ FROM debian:buster-slim
 ARG DEBIAN_FRONTEND="noninteractive"
 
 RUN \
- echo "**** install apt-transport-https first ****" && \
+ echo "**** install apt packages ****" && \
  apt-get update && \
  apt-get upgrade -y && \
  apt-get install -y \
