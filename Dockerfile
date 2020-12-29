@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM python:3.9.1-slim-buster
 
 # environment settings
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -8,10 +8,8 @@ RUN \
  apt-get update && \
  apt-get upgrade -y && \
  apt-get install -y \
- libxml2-dev libxslt1-dev \
- python3-libxml2 python3-lxml \ 
- unrar-free ffmpeg libatlas-base-dev \
- git-core python3-pip python3-distutils && \
+ unrar-free libatlas-base-dev \
+ git-core && \
  echo "**** download and install bazarr ****"&& \
  git clone https://github.com/morpheus65535/bazarr.git /opt/bazarr && \
  python3 -m pip install -r /opt/bazarr/requirements.txt && \
