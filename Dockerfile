@@ -1,54 +1,29 @@
-FROM alpine:latest
+FROM debian:buster-slim
 
-ARG BAZARR_VERSION
+# environment settings
+ARG DEBIAN_FRONTEND="noninteractive"
 
 RUN \
- echo "**** install build packages ****" && \
- apk add --no-cache --virtual=build-dependencies \
-	g++ \
-	gcc \
-	libxml2-dev \
-	libxslt-dev \
-	py3-pip \
-	python3-dev && \
- echo "**** install packages ****" && \
- apk add --no-cache \
-	curl \
-	ffmpeg \
-	libxml2 \
-	libxslt \
-	python3 \
-	unrar \
-	unzip && \
- echo "**** install bazarr ****" && \
- if [ -z ${BAZARR_VERSION+x} ]; then \
-	BAZARR_VERSION=$(curl -sX GET "https://api.github.com/repos/morpheus65535/bazarr/releases/latest" \
-	| awk '/tag_name/{print $4;exit}' FS='[""]'); \
- fi && \
- curl -o \
- /tmp/bazarr.tar.gz -L \
-	"https://github.com/morpheus65535/bazarr/archive/${BAZARR_VERSION}.tar.gz" && \
- mkdir -p \
-	/app/bazarr && \
- tar xf \
- /tmp/bazarr.tar.gz -C \
-	/app/bazarr --strip-components=1 && \
- rm -Rf /app/bazarr/bin && \
- echo "**** Install requirements ****" && \
- pip3 install --no-cache-dir -U  -r \
-	/app/bazarr/requirements.txt && \
- echo "**** clean up ****" && \
- ln -s \
-	/usr/bin/python3 \
-	/usr/bin/python && \
- apk del --purge \
-	build-dependencies && \
- rm -rf \
-	/root/.cache \
-	/tmp/*
+ echo "**** install apt-transport-https first ****" && \
+ apt-get update && \
+ apt-get upgrade -y && \
+ apt-get install -y \
+ libxml2-dev libxslt1-dev \
+ python3-libxml2 python3-lxml \ 
+ unrar-free ffmpeg libatlas-base-dev \
+ git-core python3-pip python3-distutils && \
+ echo "**** download and install bazarr ****"&& \
+ git clone https://github.com/morpheus65535/bazarr.git /opt/bazarr && \
+ python3 -m pip install -r /opt/bazarr/requirements.txt \ &&
+ echo "**** cleanup ****"
+ apt-get remove --purge -y git-core && \
+ apt-get autoremove -y && apt-get clean && \
+ rm -rf /var/lib/apt/lists/* && \
+ echo DONE
+
 
 # add local files
-WORKDIR /app
+WORKDIR /opt/
 COPY healthcheck.sh .
 COPY start.sh .
 RUN chmod +x *.sh
@@ -58,6 +33,6 @@ EXPOSE 6767
 VOLUME /config
 
 HEALTHCHECK --interval=5m --timeout=5s \
-  CMD /app/healthcheck.sh
+  CMD /opt/healthcheck.sh
 
-ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["/opt/start.sh"]
