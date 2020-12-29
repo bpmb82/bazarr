@@ -12,7 +12,7 @@ RUN \
  git-core && \
  echo "**** download and install bazarr ****"&& \
  git clone https://github.com/morpheus65535/bazarr.git /opt/bazarr && \
- python3 -m pip install -r /opt/bazarr/requirements.txt && \
+ pip install --no-cache-dir -r /opt/bazarr/requirements.txt && \
  echo "**** cleanup ****" && \
  apt-get remove --purge -y git-core && \
  apt-get autoremove -y && apt-get clean && \
