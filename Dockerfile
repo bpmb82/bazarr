@@ -2,6 +2,7 @@ FROM python:3.9.1-slim-buster
 
 # environment settings
 ARG DEBIAN_FRONTEND="noninteractive"
+ARG BAZARR_VERSION
 
 RUN \
  echo "**** install apt packages ****" && \
@@ -9,12 +10,25 @@ RUN \
  apt-get upgrade -y && \
  apt-get install -y \
  unrar-free libatlas-base-dev \
- git-core  gcc && \
+ unzip curl gcc && \
  echo "**** download and install bazarr ****"&& \
- git clone https://github.com/morpheus65535/bazarr.git /opt/bazarr && \
+ echo "**** install bazarr ****" && \
+ if [ -z ${BAZARR_VERSION+x} ]; then \
+	BAZARR_VERSION=$(curl -sX GET "https://api.github.com/repos/morpheus65535/bazarr/releases/latest" \
+	| awk '/tag_name/{print $4;exit}' FS='[""]'); \
+ fi && \
+ curl -o \
+ /tmp/bazarr.tar.gz -L \
+	"https://github.com/morpheus65535/bazarr/archive/${BAZARR_VERSION}.tar.gz" && \
+ mkdir -p \
+	/opt/bazarr && \
+ tar xf \
+ /tmp/bazarr.tar.gz -C \
+	/opt/bazarr --strip-components=1 && \
+ rm -Rf /opt/bazarr/bin && \
  pip install --no-cache-dir -r /opt/bazarr/requirements.txt && \
  echo "**** cleanup ****" && \
- apt-get remove --purge -y git-core gcc && \
+ apt-get remove --purge -y gcc && \
  apt-get autoremove -y && apt-get clean && \
  rm -rf /var/lib/apt/lists/* && \
  echo DONE
