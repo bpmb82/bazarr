@@ -10,7 +10,7 @@ RUN \
  apt-get upgrade -y && \
  apt-get install -y \
  unrar-free libatlas-base-dev \
- unzip curl gcc && \
+ unzip curl gcc ffmpeg && \
  echo "**** download and install bazarr ****"&& \
  echo "**** install bazarr ****" && \
  if [ -z ${BAZARR_VERSION+x} ]; then \
