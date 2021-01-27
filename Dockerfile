@@ -44,7 +44,7 @@ RUN chmod +x *.sh
 EXPOSE 6767
 VOLUME /config
 
-HEALTHCHECK --interval=5m --timeout=5s \
+HEALTHCHECK --interval=90s --timeout=10s \
   CMD /opt/healthcheck.sh
 
 ENTRYPOINT ["/opt/start.sh"]
